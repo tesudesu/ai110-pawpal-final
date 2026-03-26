@@ -4,6 +4,26 @@ from typing import Optional
 
 
 # ---------------------------------------------------------------------------
+# Task
+# ---------------------------------------------------------------------------
+
+@dataclass
+class Task:
+    title: str
+    duration_minutes: int
+    priority: str         # "high" | "medium" | "low"
+    category: str = "other"
+    notes: str = ""
+
+    @property
+    def priority_value(self) -> int:
+        pass
+
+    def __str__(self) -> str:
+        pass
+
+
+# ---------------------------------------------------------------------------
 # Pet
 # ---------------------------------------------------------------------------
 
@@ -33,26 +53,6 @@ class Owner:
         pass
 
     def consume_time(self, _minutes: int) -> None:
-        pass
-
-
-# ---------------------------------------------------------------------------
-# Task
-# ---------------------------------------------------------------------------
-
-@dataclass
-class Task:
-    title: str
-    duration_minutes: int
-    priority: str         # "high" | "medium" | "low"
-    category: str = "other"
-    notes: str = ""
-
-    @property
-    def priority_value(self) -> int:
-        pass
-
-    def __str__(self) -> str:
         pass
 
 
