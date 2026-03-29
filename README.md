@@ -50,3 +50,11 @@ Added the following new features:
 - Filter tasks by completion status and pet
 - After marking a recurring task as complete, the next occurrence is automatically scheduled and its due date set
 - Added a method to produce a warning if tasks (for the same pet or different pets) with any time overlaps are scheduled
+
+### Testing PawPal+
+
+In the terminal, run tests using `python -m pytest` (or `python3 -m pytest`).
+
+The tests implemented include tests to verify sorting (ascending by duration, descending by duration, and by priority), recurrence (next day/week, no next task created when task is not recurring, and adding a next task grows the scheduler by 1), conflict detection (warning when overlapping, no warning when not overlapping), and that tasks with durations longer than the avilable minutes are ignored.
+
+Based on the test results (all 15 tests passed), I am fairly confident (4 stars) in the system's reliability.
