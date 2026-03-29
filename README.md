@@ -76,4 +76,4 @@ The tests implemented include tests to verify sorting (ascending by duration, de
 
 ## UML Design
 
-![UI screenshot 1](images/uml.final.png)
+![UI screenshot 1](images/uml_final.png)
