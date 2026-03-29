@@ -44,17 +44,36 @@ pip install -r requirements.txt
 
 ### Smarter Scheduling
 
-Added the following new features:
+Added new features:
 - Display task duration in HH:MM format
 - Method to sort tasks by duration
 - Filter tasks by completion status and pet
 - After marking a recurring task as complete, the next occurrence is automatically scheduled and its due date set
 - Added a method to produce a warning if tasks (for the same pet or different pets) with any time overlaps are scheduled
 
-### Testing PawPal+
+## Features
+
+- **Priority-based scheduling** — Tasks are ranked high/medium/low and sorted numerically so the most critical care always gets scheduled first within the owner's available time budget.
+- **Time-budget enforcement** — The scheduler tracks the owner's remaining minutes and skips any task that would exceed it, preventing over-scheduling.
+- **Sorting by duration** — Tasks can be listed shortest-to-longest (or reversed), making it easy to spot quick wins or identify time-heavy commitments.
+- **Conflict warnings** — Any two tasks whose `start_time` windows overlap trigger a warning message, flagging same-pet double-booking as well as cross-pet scheduling collisions.
+- **Daily & weekly recurrence** — Marking a recurring task complete automatically calculates the next due date (+ 1 day or + 7 days) and queues a fresh copy in the scheduler.
+- **HH:MM duration formatting** — Raw minute values are converted to a human-readable `HH:MM` string for cleaner display in logs and the UI.
+- **Flexible task filtering** — Tasks can be filtered by completion status (`incomplete`/`complete`) and/or by pet name, returning only the relevant subset for display or further processing.
+- **Plan explanation** — After generating a schedule, the scheduler produces a plain-English summary listing each task in order and reporting how many minutes remain after scheduling.
+
+## Testing PawPal+
 
 In the terminal, run tests using `python -m pytest` (or `python3 -m pytest`).
 
 The tests implemented include tests to verify sorting (ascending by duration, descending by duration, and by priority), recurrence (next day/week, no next task created when task is not recurring, and adding a next task grows the scheduler by 1), conflict detection (warning when overlapping, no warning when not overlapping), and that tasks with durations longer than the avilable minutes are ignored.
 
-Based on the test results (all 15 tests passed), I am fairly confident (4 stars) in the system's reliability.
+## Demo
+
+![UI screenshot 1](images/ui1.png)
+![UI screenshot 2](images/ui2.png)
+![UI screenshot 3](images/ui3.png)
+
+## UML Design
+
+![UI screenshot 1](images/uml.final.png)

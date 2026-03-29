@@ -22,6 +22,7 @@ class Task:
     recurrence: str | None = None   # "daily" | "weekly" | None
     due_date: date | None = None
     start_time: int | None = None   # minutes from midnight, e.g. 480 = 8:00 AM
+    completed_date: date | None = None
 
     @property
     def duration_hhmm(self) -> str:
@@ -36,6 +37,7 @@ class Task:
     def mark_complete(self) -> Task | None:
         """Set the task's status to complete. Returns a new Task for the next occurrence if recurring."""
         self.status = "complete"
+        self.completed_date = date.today()
         if self.recurrence in ("daily", "weekly"):
             delta = timedelta(days=1 if self.recurrence == "daily" else 7)
             next_due = (self.due_date or date.today()) + delta
