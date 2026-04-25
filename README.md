@@ -1,79 +1,45 @@
-# PawPal+ (Module 2 Project)
+# PawPal++ (Final Project with RAG)
 
-You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.
+## Description of original project (PawPal+)
 
-## Scenario
+**PawPal+** is a Streamlit app that helps a pet owner plan care tasks for their pet. Users can enter details for pets, enter tasks for their pets, sort tasks (by duration, pet, completion status), and view the complete schedule. 
 
-A busy pet owner needs help staying consistent with pet care. They want an assistant that can:
+## Title and Summary
 
-- Track pet care tasks (walks, feeding, meds, enrichment, grooming, etc.)
-- Consider constraints (time available, priority, owner preferences)
-- Produce a daily plan and explain why it chose that plan
+This updated project is called PawPal++. The difference with the original project is that I've added a chatbot which connects with Gemini. Users can ask questions about pet care, such as how often should they bathe their dog. The chatbot has RAG implementation, which pulls information about pet care from my database. 
 
-Your job is to design the system first (UML), then implement the logic in Python, then connect it to the Streamlit UI.
+## Architecture Overview: A short explanation of your system diagram.
 
-## What you will build
+![System Design](images/system_design.png)
 
-Your final app should:
+The pet care database is sent to gemini-embedding-001, and each chunk (a piece of information in the database) is produced into a vector of numbers, which represents the meaning of the chunk. These vectors are stored in a cache. When a user types a query into the chat, the query is produced into a vector as well. That query vector is compared to the stored vectors, and the top 3 most similar stored vectors/chunks are passed as context to Gemini 2.5 Flash Lite to generate an output.  
 
-- Let a user enter basic owner + pet info
-- Let a user add/edit tasks (duration + priority at minimum)
-- Generate a daily schedule/plan based on constraints and priorities
-- Display the plan clearly (and ideally explain the reasoning)
-- Include tests for the most important scheduling behaviors
+## Setup Instructions: Step-by-step directions to run your code.
 
-## Getting started
+First, run `pip install -r requirements.txt` or `pip3 install -r requirements.txt` to download the requirements if you have not already done so.
 
-### Setup
+Then to start streamlit in your local machine, run `streamlit run app.py`. 
 
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
+## Sample Interactions: Include at least 2-3 examples of inputs and the resulting AI outputs to demonstrate the system is functional.
 
-### Suggested workflow
+Sample input 1: "how much exercise does my dog need"
+Output 1: "Most adult dogs need 30-60 minutes of exercise per day! If you have a high-energy breed like a Border Collie or Husky, they'll need over 2 hours. For smaller breeds like Chihuahuas or Pugs, 20-30 minutes of light exercise is usually enough."
 
-1. Read the scenario carefully and identify requirements and edge cases.
-2. Draft a UML diagram (classes, attributes, methods, relationships).
-3. Convert UML into Python class stubs (no logic yet).
-4. Implement scheduling logic in small increments.
-5. Add tests to verify key behaviors.
-6. Connect your logic to the Streamlit UI in `app.py`.
-7. Refine UML so it matches what you actually built.
+Sample input 2: "how often should I bathe my dog?"
+Output 2: "You should bathe your dog every 4-6 weeks. Bathing too often can strip their natural oils and lead to dry, itchy skin."
 
-### Smarter Scheduling
+## Design Decisions: Why you built it this way, and what trade-offs you made.
 
-Added new features:
-- Display task duration in HH:MM format
-- Method to sort tasks by duration
-- Filter tasks by completion status and pet
-- After marking a recurring task as complete, the next occurrence is automatically scheduled and its due date set
-- Added a method to produce a warning if tasks (for the same pet or different pets) with any time overlaps are scheduled
+At first I used stopwords. But I was not getting any outputs even when I typed questions that could have been answered from the database. So I switched to semantic comparision using gemini-embedding-001. But the trade-off is that each query now costs an API call to the embedding model, and it takes a longer time to generate responses. If the database or the number of queries gets large, this may not be an efficient way. 
 
-## Features
+## Testing Summary: What worked, what didn't, and what you learned.
 
-- **Priority-based scheduling** — Tasks are ranked high/medium/low and sorted numerically so the most critical care always gets scheduled first within the owner's available time budget.
-- **Time-budget enforcement** — The scheduler tracks the owner's remaining minutes and skips any task that would exceed it, preventing over-scheduling.
-- **Sorting by duration** — Tasks can be listed shortest-to-longest (or reversed), making it easy to spot quick wins or identify time-heavy commitments.
-- **Conflict warnings** — Any two tasks whose `start_time` windows overlap trigger a warning message, flagging same-pet double-booking as well as cross-pet scheduling collisions.
-- **Daily & weekly recurrence** — Marking a recurring task complete automatically calculates the next due date (+ 1 day or + 7 days) and queues a fresh copy in the scheduler.
-- **HH:MM duration formatting** — Raw minute values are converted to a human-readable `HH:MM` string for cleaner display in logs and the UI.
-- **Flexible task filtering** — Tasks can be filtered by completion status (`incomplete`/`complete`) and/or by pet name, returning only the relevant subset for display or further processing.
-- **Plan explanation** — After generating a schedule, the scheduler produces a plain-English summary listing each task in order and reporting how many minutes remain after scheduling.
+All 26 tests passed. I learned how easily bugs can get into the code and how hard it is to find every bug, because when I asked the AI at least twice to help me find bugs in the codebase, each time it would find something to change. 
 
-## Testing PawPal+
+## Reflection: What this project taught you about AI and problem-solving.
 
-In the terminal, run tests using `python -m pytest` (or `python3 -m pytest`).
+This project taught me many things including semantic comparison, which I found was a much better way of retrieving relevant information from the database. 
 
-The tests implemented include tests to verify sorting (ascending by duration, descending by duration, and by priority), recurrence (next day/week, no next task created when task is not recurring, and adding a next task grows the scheduler by 1), conflict detection (warning when overlapping, no warning when not overlapping), and that tasks with durations longer than the avilable minutes are ignored.
+## Demo link
 
-## Demo
-
-![UI screenshot 1](images/ui1.png)
-![UI screenshot 2](images/ui2.png)
-![UI screenshot 3](images/ui3.png)
-
-## UML Design
-
-![UI screenshot 1](images/uml_final.png)
+https://youtu.be/nKbHsDJL3DQ
