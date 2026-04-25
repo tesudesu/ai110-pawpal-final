@@ -215,3 +215,123 @@ def test_generate_plan_empty_when_no_time():
     plan = scheduler.generate_plan()
 
     assert plan == []
+
+
+# ---------------------------------------------------------------------------
+# filter_tasks
+# ---------------------------------------------------------------------------
+
+def test_filter_tasks_by_status_incomplete():
+    owner = Owner(name="Alex", time_available_minutes=60)
+    scheduler = Scheduler(owner)
+    task_a = Task(title="Walk", duration_minutes=30, priority="high")
+    task_b = Task(title="Feed", duration_minutes=10, priority="low")
+    task_b.mark_complete()
+    scheduler.add_task(task_a)
+    scheduler.add_task(task_b)
+
+    result = scheduler.filter_tasks(status="incomplete")
+
+    assert result == [task_a]
+
+
+def test_filter_tasks_by_status_complete():
+    owner = Owner(name="Alex", time_available_minutes=60)
+    scheduler = Scheduler(owner)
+    task_a = Task(title="Walk", duration_minutes=30, priority="high")
+    task_b = Task(title="Feed", duration_minutes=10, priority="low")
+    task_b.mark_complete()
+    scheduler.add_task(task_a)
+    scheduler.add_task(task_b)
+
+    result = scheduler.filter_tasks(status="complete")
+
+    assert result == [task_b]
+
+
+def test_filter_tasks_by_pet_name():
+    owner = Owner(name="Alex", time_available_minutes=60)
+    scheduler = Scheduler(owner)
+    task_mochi = Task(title="Mochi: Walk", duration_minutes=30, priority="high")
+    task_luna  = Task(title="Luna: Feed",  duration_minutes=10, priority="low")
+    scheduler.add_task(task_mochi)
+    scheduler.add_task(task_luna)
+
+    result = scheduler.filter_tasks(pet_name="Mochi")
+
+    assert result == [task_mochi]
+
+
+def test_filter_tasks_by_pet_name_and_status():
+    owner = Owner(name="Alex", time_available_minutes=60)
+    scheduler = Scheduler(owner)
+    task_a = Task(title="Mochi: Walk", duration_minutes=30, priority="high")
+    task_b = Task(title="Mochi: Feed", duration_minutes=10, priority="low")
+    task_b.mark_complete()
+    scheduler.add_task(task_a)
+    scheduler.add_task(task_b)
+
+    result = scheduler.filter_tasks(pet_name="Mochi", status="incomplete")
+
+    assert result == [task_a]
+
+
+# ---------------------------------------------------------------------------
+# Owner time management
+# ---------------------------------------------------------------------------
+
+def test_owner_has_time_for_returns_true_when_enough_time():
+    owner = Owner(name="Alex", time_available_minutes=30)
+    task = Task(title="Walk", duration_minutes=30, priority="high")
+    assert owner.has_time_for(task) is True
+
+
+def test_owner_has_time_for_returns_false_when_not_enough_time():
+    owner = Owner(name="Alex", time_available_minutes=20)
+    task = Task(title="Walk", duration_minutes=30, priority="high")
+    assert owner.has_time_for(task) is False
+
+
+def test_owner_consume_time_deducts_minutes():
+    owner = Owner(name="Alex", time_available_minutes=60)
+    owner.consume_time(20)
+    assert owner.time_available_minutes == 40
+
+
+def test_owner_consume_time_floors_at_zero():
+    owner = Owner(name="Alex", time_available_minutes=10)
+    owner.consume_time(999)
+    assert owner.time_available_minutes == 0
+
+
+# ---------------------------------------------------------------------------
+# Task.duration_hhmm formatting
+# ---------------------------------------------------------------------------
+
+def test_duration_hhmm_formats_correctly():
+    task = Task(title="Long session", duration_minutes=90, priority="low")
+    assert task.duration_hhmm == "01:30"
+
+
+def test_duration_hhmm_under_one_hour():
+    task = Task(title="Quick check", duration_minutes=5, priority="low")
+    assert task.duration_hhmm == "00:05"
+
+
+# ---------------------------------------------------------------------------
+# generate_plan excludes completed tasks
+# ---------------------------------------------------------------------------
+
+def test_generate_plan_excludes_completed_tasks():
+    owner = Owner(name="Alex", time_available_minutes=120)
+    scheduler = Scheduler(owner)
+    done = Task(title="Already done", duration_minutes=10, priority="high")
+    done.mark_complete()
+    pending = Task(title="Still pending", duration_minutes=10, priority="low")
+    scheduler.add_task(done)
+    scheduler.add_task(pending)
+
+    plan = scheduler.generate_plan()
+
+    assert len(plan) == 1
+    assert plan[0].title == "Still pending"

@@ -75,9 +75,10 @@ if st.button("Add task"):
         st.error("Task title cannot be empty.")
     else:
         total_time = int(time_available if not session_active else st.session_state.original_time)
+        existing = get_scheduler()
         capacity = total_time - (
-            sum(t.duration_minutes for t in get_scheduler().tasks if t.status == "incomplete")
-            if get_scheduler() else 0
+            sum(t.duration_minutes for t in existing.tasks if t.status == "incomplete")
+            if existing else 0
         )
         if int(duration) > capacity:
             st.warning(
@@ -184,7 +185,7 @@ if st.button("Generate schedule"):
     else:
         st.warning("Add at least one task before generating a schedule.")
 
-if "plan" in st.session_state:
+if "plan" in st.session_state and scheduler:
     plan = st.session_state.plan
     conflicts = scheduler.detect_conflicts(plan)
     if conflicts:
@@ -232,8 +233,11 @@ if query:
             pet_ctx = ", ".join(f"{p.name} ({p.species})" for p in pets)
 
     with st.spinner("Thinking..."):
-        docs = retrieve(query)
-        reply = answer(query, docs, pet_ctx)
+        try:
+            docs = retrieve(query)
+            reply = answer(query, docs, pet_ctx)
+        except Exception as e:
+            reply = f"Sorry, something went wrong: {e}"
 
     st.session_state.chat_history.append({"role": "assistant", "content": reply})
     st.rerun()

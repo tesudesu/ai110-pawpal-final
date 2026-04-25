@@ -49,6 +49,7 @@ class Task:
                 notes=self.notes,
                 recurrence=self.recurrence,
                 due_date=next_due,
+                start_time=self.start_time,
             )
         return None
 
