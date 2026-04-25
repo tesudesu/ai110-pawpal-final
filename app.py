@@ -1,9 +1,11 @@
 import streamlit as st
 from datetime import date
 from pawpal_system import Task, Pet, Owner, Scheduler
+from rag.retriever import retrieve
+from rag.generator import answer
 
-st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
-st.title("🐾 PawPal+")
+st.set_page_config(page_title="PawPal++", page_icon="🐾", layout="centered")
+st.title("🐾 PawPal++")
 
 # ---------------------------------------------------------------------------
 # Session helpers
@@ -203,3 +205,35 @@ if "plan" in st.session_state:
         st.caption(f"Time remaining after scheduling: {st.session_state.owner.time_available_minutes} min")
     else:
         st.warning(scheduler.explain_plan(plan))
+
+# ---------------------------------------------------------------------------
+# Ask PawPal chat
+# ---------------------------------------------------------------------------
+
+st.divider()
+st.subheader("Ask PawPal")
+st.caption("Ask anything about pet care — answers are pulled from a pet care knowledge base.")
+
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+for msg in st.session_state.chat_history:
+    with st.chat_message(msg["role"]):
+        st.write(msg["content"])
+
+query = st.chat_input("e.g. How often should I bathe my dog?")
+if query:
+    st.session_state.chat_history.append({"role": "user", "content": query})
+
+    pet_ctx = ""
+    if "owner" in st.session_state:
+        pets = st.session_state.owner.pets
+        if pets:
+            pet_ctx = ", ".join(f"{p.name} ({p.species})" for p in pets)
+
+    with st.spinner("Thinking..."):
+        docs = retrieve(query)
+        reply = answer(query, docs, pet_ctx)
+
+    st.session_state.chat_history.append({"role": "assistant", "content": reply})
+    st.rerun()
